@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f6f5f0" />
+    <meta name="description" content="A small daily five-letter word puzzle." />
+    <title>Wordy — a little word game</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="Wordy home"><span class="brand-mark" aria-hidden="true">w.</span><span>wordy</span></a>
+        <div class="day-pill"><span class="live-dot" aria-hidden="true"></span> DAILY WORD <span class="day-number">#042</span></div>
+        <nav class="header-actions" aria-label="Game options">
+          <button class="icon-button" id="help-button" aria-label="How to play" title="How to play">?</button>
+          <button class="icon-button" id="stats-button" aria-label="Statistics" title="Statistics">▥</button>
+          <button class="icon-button" id="theme-button" aria-label="Toggle color theme" title="Toggle theme" aria-pressed="false">☼</button>
+        </nav>
+      </header>
+
+      <section class="game-layout" aria-label="Wordy daily puzzle">
+        <aside class="side-note left-note" aria-label="About Wordy">
+          <span class="note-kicker">A small daily ritual</span>
+          <p>Five letters.<br />Six chances.<br /><em>One fresh word.</em></p>
+          <div class="scribble" aria-hidden="true">✳</div>
+        </aside>
+
+        <section class="game-card" aria-label="Game board">
+          <div class="game-intro">
+            <p class="eyebrow" id="puzzle-date">TODAY</p>
+            <h1>Find the word.</h1>
+            <p class="subhead">A new puzzle, every day. Take a guess.</p>
+          </div>
+          <div class="board" id="board" role="grid" aria-label="Six guesses, five letters each"></div>
+          <p class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></p>
+          <div class="keyboard" id="keyboard" role="group" aria-label="On-screen keyboard"></div>
+          <div class="below-board"><span><kbd>ENTER</kbd> to guess</span><span><kbd>⌫</kbd> to delete</span></div>
+          <button class="reset-button" id="reset-button" hidden>Start a fresh demo round</button>
+        </section>
+
+        <aside class="side-note right-note" aria-label="Puzzle details">
+          <div class="streak-card"><span class="streak-icon" aria-hidden="true">✦</span><span class="note-kicker">Your daily pause</span><strong>5 <small>letters</small></strong><span class="streak-caption">A fresh little challenge.</span></div>
+          <div class="tiny-calendar" aria-hidden="true"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span><i></i><i></i><i></i><b>✦</b><i></i><i></i><i></i></div>
+          <p class="aside-caption">Six guesses, then<br />the answer is yours.</p>
+        </aside>
+      </section>
+
+      <footer class="footer">
+        <span>Made for your coffee break <span class="heart" aria-hidden="true">♥</span></span>
+        <button id="share-button">Share today’s result <span aria-hidden="true">↗</span></button>
+      </footer>
+    </main>
+
+    <dialog id="help-dialog" aria-labelledby="help-title">
+      <form method="dialog"><button class="dialog-close" aria-label="Close">×</button></form>
+      <p class="eyebrow">A LITTLE GUIDE</p>
+      <h2 id="help-title">How to play</h2>
+      <p>Guess the five-letter word in six tries. After each guess, the tiles show how close you are.</p>
+      <div class="example-row"><span class="tile correct">S</span><span><strong>Right letter, right spot</strong></span></div>
+      <div class="example-row"><span class="tile present">O</span><span><strong>In the word, different spot</strong></span></div>
+      <div class="example-row"><span class="tile absent">X</span><span><strong>Not in today’s word</strong></span></div>
+      <p class="dialog-footnote">This preview accepts any five letters. The full game will check guesses against a word list.</p>
+      <form method="dialog"><button class="primary-button">Got it</button></form>
+    </dialog>
+
+    <dialog id="stats-dialog" aria-labelledby="stats-title">
+      <form method="dialog"><button class="dialog-close" aria-label="Close">×</button></form>
+      <p class="eyebrow">YOUR LITTLE WINS</p>
+      <h2 id="stats-title">Stats are coming</h2>
+      <p>Daily streaks and guess history will be part of the full game. This preview keeps your current round on this device.</p>
+      <form method="dialog"><button class="primary-button">Back to the puzzle</button></form>
+    </dialog>
+
+    <dialog id="share-dialog" aria-labelledby="share-title">
+      <form method="dialog"><button class="dialog-close" aria-label="Close">×</button></form>
+      <p class="eyebrow">SPOILER-FREE</p>
+      <h2 id="share-title">Your result</h2>
+      <p>Your browser couldn’t copy automatically. Select the grid and copy it from here.</p>
+      <textarea id="share-text" rows="8" readonly aria-label="Shareable result"></textarea>
+      <button class="primary-button" id="copy-fallback">Try copy again</button>
+      <form method="dialog"><button class="secondary-button">Close</button></form>
+    </dialog>
+  </body>
+</html>
