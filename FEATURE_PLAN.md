@@ -31,9 +31,9 @@ Wordy is a small, static daily word puzzle inspired by familiar five-letter gues
 ## Decisions to make before production
 
 - **Daily reset:** this prototype uses the browser's local date for a preview puzzle. Production should choose and document one reset timezone.
-- **Word source:** a curated answer list is needed; the prototype uses a fixed sample answer for demonstration.
+- **Word source:** the prototype ships a 1,000-word JSONL answer pool derived from an MIT-licensed five-letter list, plus a small fallback for local `file://` previews. Production can replace this pool with a more tightly curated answer and accepted-guess list.
 - **Static hosting:** static hosting is enough for the MVP. It cannot reliably prevent players from inspecting the client-side answer list.
 
 ## Prototype scope
 
-The accompanying `index.html` is an interactive UI example. It demonstrates board entry from physical and on-screen keyboards, duplicate-aware tile feedback, a win or loss state, spoiler-free sharing, theme choice, and responsive presentation. The active round and theme are saved locally; a finished round can be reset from the page. It uses one demo answer and accepts any five-letter combination. It does not implement a production daily schedule, dictionary validation, long-term statistics, or offline caching.
+The accompanying `index.html` is an interactive UI example. It demonstrates board entry from physical and on-screen keyboards, duplicate-aware tile feedback, a win or loss state, spoiler-free sharing, theme choice, and responsive presentation. Each fresh round picks a random answer from `assets/words.jsonl`; the active answer, round, and theme are saved locally. Starting a random round mid-game asks before clearing guesses. Guesses accept any five-letter combination, without dictionary validation. The preview does not implement a production daily schedule, long-term statistics, or offline caching.

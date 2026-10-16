@@ -285,6 +285,10 @@ dialog form:first-child { position: absolute; top: 12px; right: 15px; }
   font-weight: 700;
 }
 .secondary-button { width: 100%; margin-top: 12px; padding: 8px; }
+.dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.dialog-actions form { order: 1; }
+.dialog-actions .primary-button { order: 2; }
+.dialog-actions .secondary-button { margin-top: 18px; }
 #share-text {
   width: 100%;
   resize: vertical;
@@ -328,7 +332,7 @@ dialog form:first-child { position: absolute; top: 12px; right: 15px; }
   .brand { gap: 7px; font-size: 16px; }
   .brand-mark { width: 27px; height: 27px; }
   .day-pill { font-size: 8px; letter-spacing: .6px; }
-  .header-actions { gap: 5px; }
+  .header-actions { gap: 4px; }
   .icon-button { width: 31px; height: 31px; }
   .game-layout { display: flex; flex-direction: column; justify-content: center; gap: 0; padding: 18px 0 14px; }
   .side-note { display: none; }

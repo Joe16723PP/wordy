@@ -1,5 +1,13 @@
-(() => {
-  const ANSWER = 'CRANE';
+(async () => {
+  const FALLBACK_ANSWERS = [
+    'APPLE', 'BEACH', 'BERRY', 'BREAD', 'BRICK', 'BRUSH', 'CANDY', 'CHAIR', 'CHARM', 'CLOUD',
+    'CRANE', 'CROWN', 'DANCE', 'DREAM', 'EARTH', 'FLAME', 'FLUTE', 'FRAME', 'FRESH', 'FRUIT',
+    'GHOST', 'GRAPE', 'GRASS', 'HEART', 'HONEY', 'HOUSE', 'JUICE', 'LIGHT', 'MANGO', 'MUSIC',
+    'NIGHT', 'OCEAN', 'OLIVE', 'PAINT', 'PAPER', 'PEACH', 'PLANT', 'PLATE', 'ROBOT', 'SHINE',
+    'SMILE', 'SNAKE', 'SOUND', 'SPACE', 'SPOON', 'STONE', 'STORM', 'SWEET', 'TIGER', 'TRAIN',
+    'WATER', 'WHALE', 'WORLD', 'ZEBRA',
+  ];
+  const ANSWERS = await loadAnswerList();
   const MAX_GUESSES = 6;
   const STORAGE_KEY = 'wordy-demo-v1';
   const KEY_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
@@ -13,15 +21,47 @@
   const helpDialog = document.querySelector('#help-dialog');
   const statsDialog = document.querySelector('#stats-dialog');
   const shareDialog = document.querySelector('#share-dialog');
+  const randomDialog = document.querySelector('#random-dialog');
   const rows = [];
   let guesses = [];
   let current = '';
   let finished = false;
+  let answer = pickRandomAnswer();
 
   const today = new Intl.DateTimeFormat(undefined, {
     weekday: 'long', month: 'long', day: 'numeric',
   }).format(new Date());
   document.querySelector('#puzzle-date').textContent = today.toUpperCase();
+
+  function pickRandomAnswer(previousAnswer = '') {
+    const options = ANSWERS.filter(word => word !== previousAnswer);
+    return options[Math.floor(Math.random() * options.length)];
+  }
+
+  async function loadAnswerList() {
+    try {
+      const response = await fetch('./assets/words.jsonl');
+      if (!response.ok) throw new Error(`Word list request failed: ${response.status}`);
+      const lines = (await response.text()).split(/\r?\n/);
+      const words = [];
+      const seen = new Set();
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        let record;
+        try { record = JSON.parse(line); } catch { continue; }
+        const word = record && typeof record.word === 'string' ? record.word.toUpperCase() : '';
+        if (!/^[A-Z]{5}$/.test(word) || seen.has(word)) continue;
+        seen.add(word);
+        words.push(word);
+        if (words.length === 1000) break;
+      }
+      if (words.length === 0) throw new Error('Word list did not contain usable entries');
+      return words;
+    } catch {
+      // A file:// preview cannot fetch neighboring files in many browsers.
+      return [...FALLBACK_ANSWERS];
+    }
+  }
 
   function readSavedGame() {
     try {
@@ -30,6 +70,9 @@
       if (!saved.guesses.every(word => typeof word === 'string' && /^[A-Z]{5}$/.test(word))) return null;
       if (saved.current && (typeof saved.current !== 'string' || !/^[A-Z]{0,5}$/.test(saved.current))) return null;
       if (saved.finished && saved.guesses.length === 0) return null;
+      // Keep rounds created by the previous fixed-answer prototype playable.
+      if (!saved.answer && (saved.guesses.length || saved.current)) saved.answer = 'CRANE';
+      if (!saved.answer || !ANSWERS.includes(saved.answer)) return null;
       return saved;
     } catch {
       return null;
@@ -38,7 +81,7 @@
 
   function saveGame() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ guesses, current, finished }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ answer, guesses, current, finished }));
     } catch {
       // The game still works in private browsing or when storage is unavailable.
     }
@@ -85,11 +128,11 @@
 
   function score(guess) {
     const result = Array(5).fill('absent');
-    const remaining = ANSWER.split('');
+    const remaining = answer.split('');
 
     // Mark exact matches first so duplicate letters cannot claim the same answer tile twice.
     [...guess].forEach((letter, index) => {
-      if (letter === ANSWER[index]) {
+      if (letter === answer[index]) {
         result[index] = 'correct';
         remaining[index] = null;
       }
@@ -145,7 +188,7 @@
   }
 
   function press(key) {
-    if (finished || helpDialog.open || statsDialog.open || shareDialog.open) return;
+    if (finished || helpDialog.open || statsDialog.open || shareDialog.open || randomDialog.open) return;
     announce('');
     if (key === 'ENTER') return submitGuess();
     if (key === '⌫' || key === 'BACKSPACE') current = current.slice(0, -1);
@@ -166,12 +209,12 @@
     current = '';
     const result = renderGuess(guess, rowIndex, true);
 
-    if (guess === ANSWER) {
+    if (guess === answer) {
       finished = true;
       announce(`Lovely! You found the word in ${guesses.length} ${guesses.length === 1 ? 'try' : 'tries'}.`, 'success');
     } else if (guesses.length === MAX_GUESSES) {
       finished = true;
-      announce(`The word was ${ANSWER}. Come back for another round soon.`, 'notice');
+      announce(`The word was ${answer}. Try another random word when you’re ready.`, 'notice');
     } else {
       const hints = result.map((state, index) => `${guess[index]} ${state.replace('-', ' ')}`).join(', ');
       announce(`Guess ${guesses.length} submitted. ${hints}.`, 'success');
@@ -188,13 +231,14 @@
     if (!saved) return;
     guesses = saved.guesses;
     current = saved.current || '';
-    finished = Boolean(saved.finished || guesses.length >= MAX_GUESSES || guesses.includes(ANSWER));
+    answer = saved.answer;
+    finished = Boolean(saved.finished || guesses.length >= MAX_GUESSES || guesses.includes(answer));
     guesses.forEach((guess, index) => renderGuess(guess, index));
     renderCurrent();
     gameCard.classList.toggle('is-finished', finished);
     document.querySelector('#reset-button').hidden = !finished;
-    if (guesses.includes(ANSWER)) announce(`Lovely! You found the word in ${guesses.length} ${guesses.length === 1 ? 'try' : 'tries'}.`, 'success');
-    else if (guesses.length === MAX_GUESSES) announce(`The word was ${ANSWER}. Come back for another round soon.`, 'notice');
+    if (guesses.includes(answer)) announce(`Lovely! You found the word in ${guesses.length} ${guesses.length === 1 ? 'try' : 'tries'}.`, 'success');
+    else if (guesses.length === MAX_GUESSES) announce(`The word was ${answer}. Try another random word when you’re ready.`, 'notice');
   }
 
   function emojiGrid() {
@@ -206,7 +250,7 @@
       announce('Play a round before sharing your result.', 'notice');
       return;
     }
-    const resultText = `Wordy #042 ${guesses.length}/${MAX_GUESSES}${finished && !guesses.includes(ANSWER) ? ' ·' : ''}\n\n${emojiGrid()}`;
+    const resultText = `Wordy ${guesses.length}/${MAX_GUESSES}${finished && !guesses.includes(answer) ? ' ·' : ''}\n\n${emojiGrid()}`;
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard access unavailable');
       await navigator.clipboard.writeText(resultText);
@@ -236,13 +280,40 @@
     setTheme(savedTheme === 'dark', false);
   }
 
+  function resetRound(nextAnswer) {
+    answer = nextAnswer;
+    guesses = [];
+    current = '';
+    finished = false;
+    rows.forEach(row => [...row.children].forEach(tile => {
+      tile.textContent = '';
+      tile.className = 'tile';
+      tile.setAttribute('aria-label', 'Empty');
+    }));
+    keyboard.querySelectorAll('.key').forEach(key => key.classList.remove('absent', 'present', 'correct'));
+    gameCard.classList.remove('is-finished');
+    document.querySelector('#reset-button').hidden = true;
+    announce('A new random word is ready.');
+    saveGame();
+  }
+
+  function requestRandomRound() {
+    const hasProgress = guesses.length > 0 || current.length > 0;
+    if (hasProgress && !finished) {
+      randomDialog.showModal();
+      return;
+    }
+    resetRound(pickRandomAnswer(answer));
+  }
+
   buildBoard();
   buildKeyboard();
   initTheme();
   restoreGame();
+  if (!readSavedGame()) saveGame();
 
   document.addEventListener('keydown', event => {
-    if (event.metaKey || event.ctrlKey || event.altKey || helpDialog.open || statsDialog.open || shareDialog.open) return;
+    if (event.metaKey || event.ctrlKey || event.altKey || helpDialog.open || statsDialog.open || shareDialog.open || randomDialog.open) return;
     const key = event.key.toUpperCase();
     if (key === 'ENTER' || key === 'BACKSPACE' || /^[A-Z]$/.test(key)) {
       event.preventDefault();
@@ -254,23 +325,16 @@
   document.querySelector('#stats-button').addEventListener('click', () => statsDialog.showModal());
   document.querySelector('#theme-button').addEventListener('click', () => setTheme(!document.body.classList.contains('dark')));
   document.querySelector('#share-button').addEventListener('click', shareResult);
+  document.querySelector('#random-button').addEventListener('click', requestRandomRound);
+  document.querySelector('#confirm-random').addEventListener('click', () => {
+    randomDialog.close();
+    resetRound(pickRandomAnswer(answer));
+  });
   document.querySelectorAll('[data-close-dialog]').forEach(button => {
     button.addEventListener('click', () => button.closest('dialog').close());
   });
   document.querySelector('#reset-button').addEventListener('click', () => {
-    guesses = [];
-    current = '';
-    finished = false;
-    try { localStorage.removeItem(STORAGE_KEY); } catch { /* Reset still works for this page session. */ }
-    rows.forEach(row => [...row.children].forEach(tile => {
-      tile.textContent = '';
-      tile.className = 'tile';
-      tile.setAttribute('aria-label', 'Empty');
-    }));
-    keyboard.querySelectorAll('.key').forEach(key => key.classList.remove('absent', 'present', 'correct'));
-    gameCard.classList.remove('is-finished');
-    document.querySelector('#reset-button').hidden = true;
-    announce('New demo round ready.');
+    resetRound(pickRandomAnswer(answer));
   });
   document.querySelector('#copy-fallback').addEventListener('click', async () => {
     const field = document.querySelector('#share-text');
