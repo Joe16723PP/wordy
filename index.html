@@ -39,6 +39,7 @@
           <p class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></p>
           <div class="keyboard" id="keyboard" role="group" aria-label="On-screen keyboard"></div>
           <div class="below-board"><span><kbd>ENTER</kbd> to guess</span><span><kbd>⌫</kbd> to delete</span></div>
+          <button class="hint-button" id="hint-button" type="button">Get a hint <span>1 available</span></button>
           <button class="reset-button" id="reset-button" hidden>Try another random word</button>
         </section>
 
@@ -94,6 +95,14 @@
         <form method="dialog"><button class="secondary-button">Keep this round</button></form>
         <button class="primary-button" id="confirm-random">Pick a word</button>
       </div>
+    </dialog>
+
+    <dialog id="hint-dialog" aria-labelledby="hint-title" aria-describedby="hint-result">
+      <form method="dialog"><button class="dialog-close" aria-label="Close">×</button></form>
+      <p class="eyebrow">ONE LITTLE NUDGE</p>
+      <h2 id="hint-title">Your hint</h2>
+      <p id="hint-result" class="hint-result"></p>
+      <form method="dialog"><button class="primary-button">Back to the puzzle</button></form>
     </dialog>
   </body>
 </html>

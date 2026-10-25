@@ -181,7 +181,10 @@ button:focus-visible, textarea:focus-visible, a:focus-visible {
 .key.correct, .key.present, .key.absent { color: white; }
 .key.correct { background: var(--green); }
 .key.present { background: var(--yellow); }
-.key.absent { background: #858c86; }
+.key.absent {
+  background: #d5d8d2;
+  color: #737a73;
+}
 .below-board {
   display: flex;
   max-width: 300px;
@@ -197,6 +200,24 @@ button:focus-visible, textarea:focus-visible, a:focus-visible {
   padding: 2px 4px;
   font: 9px 'DM Mono', monospace;
 }
+.hint-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  padding: 7px 12px;
+  color: var(--green-dark);
+  font-size: 11px;
+  font-weight: 700;
+}
+.hint-button span { color: var(--muted); font-size: 9px; font-weight: 500; }
+.hint-button:hover:not(:disabled) { border-color: var(--green); }
+.hint-button:disabled { cursor: default; opacity: .6; }
+.hint-result { display: flex; align-items: center; gap: 12px; }
+.hint-tile { width: 42px; height: 42px; flex: 0 0 42px; font-size: 20px; }
 .reset-button {
   margin-top: 9px;
   border: 0;
@@ -314,6 +335,8 @@ dialog form:first-child { position: absolute; top: 12px; right: 15px; }
 .dark .game-card { border-color: #374237; }
 .dark .icon-button, .dark .below-board kbd { background: #29322a; color: #d2d9ce; }
 .dark .left-note p, .dark .streak-card strong { color: #d2ddcf; }
+.dark .hint-button { background: #29322a; }
+.dark .key.absent { background: #343c35; color: #899287; }
 .dark dialog { background: var(--card); }
 
 @keyframes pop { 50% { transform: scale(1.07); } }
@@ -348,6 +371,7 @@ dialog form:first-child { position: absolute; top: 12px; right: 15px; }
   .key { min-width: 0; height: clamp(42px, 10vw, 46px); flex: 1; border-radius: 5px; padding: 0 2px; font-size: clamp(10px, 3vw, 12px); }
   .key.wide { min-width: 0; flex: 1.45; font-size: 8px; }
   .below-board { max-width: 310px; margin-top: 11px; }
+  .hint-button { margin-top: 12px; }
   .footer { gap: 8px; padding-top: 12px; font-size: 9px; }
   .footer button { font-size: 9px; }
   dialog { padding: 26px 22px 22px; }

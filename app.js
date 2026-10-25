@@ -22,10 +22,13 @@
   const statsDialog = document.querySelector('#stats-dialog');
   const shareDialog = document.querySelector('#share-dialog');
   const randomDialog = document.querySelector('#random-dialog');
+  const hintDialog = document.querySelector('#hint-dialog');
+  const hintButton = document.querySelector('#hint-button');
   const rows = [];
   let guesses = [];
   let current = '';
   let finished = false;
+  let hintUsed = false;
   let answer = pickRandomAnswer();
 
   const today = new Intl.DateTimeFormat(undefined, {
@@ -73,6 +76,7 @@
       // Keep rounds created by the previous fixed-answer prototype playable.
       if (!saved.answer && (saved.guesses.length || saved.current)) saved.answer = 'CRANE';
       if (!saved.answer || !ANSWERS.includes(saved.answer)) return null;
+      saved.hintUsed = Boolean(saved.hintUsed);
       return saved;
     } catch {
       return null;
@@ -81,7 +85,7 @@
 
   function saveGame() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ answer, guesses, current, finished }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ answer, guesses, current, finished, hintUsed }));
     } catch {
       // The game still works in private browsing or when storage is unavailable.
     }
@@ -222,6 +226,8 @@
 
     gameCard.classList.toggle('is-finished', finished);
     document.querySelector('#reset-button').hidden = !finished;
+    hintButton.disabled = hintUsed || finished;
+    hintButton.querySelector('span').textContent = hintUsed ? 'used' : '1 available';
     renderCurrent();
     saveGame();
   }
@@ -232,11 +238,14 @@
     guesses = saved.guesses;
     current = saved.current || '';
     answer = saved.answer;
+    hintUsed = saved.hintUsed;
     finished = Boolean(saved.finished || guesses.length >= MAX_GUESSES || guesses.includes(answer));
     guesses.forEach((guess, index) => renderGuess(guess, index));
     renderCurrent();
     gameCard.classList.toggle('is-finished', finished);
     document.querySelector('#reset-button').hidden = !finished;
+    hintButton.disabled = hintUsed || finished;
+    hintButton.querySelector('span').textContent = hintUsed ? 'used' : '1 available';
     if (guesses.includes(answer)) announce(`Lovely! You found the word in ${guesses.length} ${guesses.length === 1 ? 'try' : 'tries'}.`, 'success');
     else if (guesses.length === MAX_GUESSES) announce(`The word was ${answer}. Try another random word when you’re ready.`, 'notice');
   }
@@ -285,6 +294,7 @@
     guesses = [];
     current = '';
     finished = false;
+    hintUsed = false;
     rows.forEach(row => [...row.children].forEach(tile => {
       tile.textContent = '';
       tile.className = 'tile';
@@ -293,6 +303,8 @@
     keyboard.querySelectorAll('.key').forEach(key => key.classList.remove('absent', 'present', 'correct'));
     gameCard.classList.remove('is-finished');
     document.querySelector('#reset-button').hidden = true;
+    hintButton.disabled = false;
+    hintButton.querySelector('span').textContent = '1 available';
     announce('A new random word is ready.');
     saveGame();
   }
@@ -313,7 +325,7 @@
   if (!readSavedGame()) saveGame();
 
   document.addEventListener('keydown', event => {
-    if (event.metaKey || event.ctrlKey || event.altKey || helpDialog.open || statsDialog.open || shareDialog.open || randomDialog.open) return;
+    if (event.metaKey || event.ctrlKey || event.altKey || helpDialog.open || statsDialog.open || shareDialog.open || randomDialog.open || hintDialog.open) return;
     const key = event.key.toUpperCase();
     if (key === 'ENTER' || key === 'BACKSPACE' || /^[A-Z]$/.test(key)) {
       event.preventDefault();
@@ -323,6 +335,28 @@
 
   document.querySelector('#help-button').addEventListener('click', () => helpDialog.showModal());
   document.querySelector('#stats-button').addEventListener('click', () => statsDialog.showModal());
+  hintButton.addEventListener('click', () => {
+    if (hintUsed || finished) return;
+    const unrevealed = answer.split('').map((_, index) => index)
+      .filter(index => guesses.every(guess => guess[index] !== answer[index]));
+    const choices = unrevealed.length ? unrevealed : answer.split('').map((_, index) => index);
+    const index = choices[Math.floor(Math.random() * choices.length)];
+    const letter = answer[index];
+    const ordinal = ['1st', '2nd', '3rd', '4th', '5th'][index];
+    const hintResult = document.querySelector('#hint-result');
+    const position = document.createElement('strong');
+    position.textContent = `The ${ordinal} letter is`;
+    const tile = document.createElement('span');
+    tile.className = 'tile correct hint-tile';
+    tile.textContent = letter;
+    tile.setAttribute('aria-label', `${letter}, correct letter`);
+    hintResult.replaceChildren(position, tile);
+    hintUsed = true;
+    hintButton.disabled = true;
+    hintButton.querySelector('span').textContent = 'used';
+    saveGame();
+    hintDialog.showModal();
+  });
   document.querySelector('#theme-button').addEventListener('click', () => setTheme(!document.body.classList.contains('dark')));
   document.querySelector('#share-button').addEventListener('click', shareResult);
   document.querySelector('#random-button').addEventListener('click', requestRandomRound);
