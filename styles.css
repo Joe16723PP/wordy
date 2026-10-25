@@ -336,7 +336,11 @@ dialog form:first-child { position: absolute; top: 12px; right: 15px; }
 .dark .icon-button, .dark .below-board kbd { background: #29322a; color: #d2d9ce; }
 .dark .left-note p, .dark .streak-card strong { color: #d2ddcf; }
 .dark .hint-button { background: #29322a; }
-.dark .key.absent { background: #343c35; color: #899287; }
+.dark .key.absent {
+  border: 1px solid #465047;
+  background: #2c352f;
+  color: #a0a89e;
+}
 .dark dialog { background: var(--card); }
 
 @keyframes pop { 50% { transform: scale(1.07); } }
