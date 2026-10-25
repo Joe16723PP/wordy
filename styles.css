@@ -180,11 +180,8 @@ button:focus-visible, textarea:focus-visible, a:focus-visible {
 .key.wide { min-width: 52px; font-size: 9px; }
 .key.correct, .key.present, .key.absent { color: white; }
 .key.correct { background: var(--green); }
-.key.present { background: var(--yellow); }
-.key.absent {
-  background: #d5d8d2;
-  color: #737a73;
-}
+.key.present { background: var(--yellow); color: #26352d; }
+.key.absent { background: #b94f49; }
 .below-board {
   display: flex;
   max-width: 300px;
@@ -336,11 +333,6 @@ dialog form:first-child { position: absolute; top: 12px; right: 15px; }
 .dark .icon-button, .dark .below-board kbd { background: #29322a; color: #d2d9ce; }
 .dark .left-note p, .dark .streak-card strong { color: #d2ddcf; }
 .dark .hint-button { background: #29322a; }
-.dark .key.absent {
-  border: 1px solid #465047;
-  background: #2c352f;
-  color: #a0a89e;
-}
 .dark dialog { background: var(--card); }
 
 @keyframes pop { 50% { transform: scale(1.07); } }
